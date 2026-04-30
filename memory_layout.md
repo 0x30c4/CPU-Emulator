@@ -13,4 +13,11 @@ ADDRESS | DATA
 0xFFFE  | 0x00
 0xFFFF  | 0x00    <- End of memory
 
+lo   hi
 0x01 0x00
+0x33 0x44
+
+(hi << 8) | lo
+
+00000000 00000000
+00000000 00000001

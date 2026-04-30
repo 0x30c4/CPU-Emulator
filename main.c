@@ -1,7 +1,7 @@
-#include <stdatomic.h>
 #include <stdint.h>
-#include<stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #define true  1
 #define false 0
@@ -9,9 +9,8 @@
 const uint8_t NOP = 0xEA;
 const uint8_t LDA = 0xA9;
 
-const uint16_t MEMORY_SIZE = 0xFFFF;
+const uint32_t MEMORY_SIZE = 0x10000;
 const uint16_t PAGE_SIZE   = 0xFF;
-const uint8_t  WORD        = 0x00;
 
 typedef struct CPU6502 {
   uint16_t PC;                  // Prgoram Counter
@@ -45,13 +44,19 @@ uint8_t write_mem(uint16_t addr, uint8_t data, uint8_t *memory) {
 
 void setup_memeory(uint8_t *memory) {
 
-  write_mem(0xFFFC, 0x01, memory);
-  write_mem(0xFFFD, 0x00, memory);
-  write_mem(0x0000, NOP, memory);
-  write_mem(0x0001, NOP, memory);
-  write_mem(0x0002, NOP, memory);
-  write_mem(0x0003, NOP, memory);
+  // Reset vector
+  write_mem(0xFFFC, 0x00, memory);
+  write_mem(0xFFFD, 0x80, memory);
 
+  // our program
+  write_mem(0x8000, LDA, memory);
+  write_mem(0x8001, 0x42, memory);
+  write_mem(0x8002, LDA, memory);
+  write_mem(0x8003, 0x41, memory);
+  write_mem(0x8004, NOP, memory);
+  write_mem(0x8005, LDA, memory);
+  write_mem(0x8006, 0x44, memory);
+  write_mem(0x8007, NOP, memory);
 }
 
 // fetch one byte
@@ -62,8 +67,15 @@ uint8_t fetch_byte(CPU *cpu, uint8_t *memory) {
   return data;
 }
 
-void reset_cpu(CPU *cpu) {
-  cpu->PC = 0xFFFC;
+void reset_cpu(CPU *cpu, uint8_t *memory) {
+
+  // perform the reset sequence
+  uint8_t lo = read_mem(0xFFFC, memory);
+  uint8_t hi = read_mem(0xFFFD, memory);
+
+  // little endian to big endian
+  cpu->PC = (hi << 8) | lo;
+
   cpu->AC = 0x00;
   cpu->XR = 0x00;
   cpu->YR = 0x00;
@@ -72,9 +84,8 @@ void reset_cpu(CPU *cpu) {
 }
 
 void cpu_step(CPU *cpu, uint8_t *memory) {
-
+  // read the next step
   uint8_t opcode = fetch_byte(cpu, memory);
-
   switch (opcode) {
     case NOP:
     {
@@ -94,24 +105,25 @@ int main(int argc, char *argv[]) {
   // at the start 7 empty cycle reset sequence
   unsigned long long int clock = 0;
   struct CPU6502 cpu;
-  uint8_t *memory = calloc(MEMORY_SIZE / 8, sizeof(uint8_t));
+  uint8_t *memory = calloc(MEMORY_SIZE, sizeof(uint8_t));
 
-  reset_cpu(&cpu);
+  if (memory == NULL) {
+    printf("Memory allocation failed\n");
+    return 1;
+  }
+
   setup_memeory(memory);
+  reset_cpu(&cpu, memory);
 
   while (true) {
     if (clock == 10) {
       break;
     }
 
-    uint8_t data = fetch_byte(&cpu, memory);
+    cpu_step(&cpu, memory);
 
-    printf("%x\n", data);
+    print_cpu_debug_log(&cpu, clock);
 
-    //
-    // cpu_step(&cpu, memory);
-    //
-    // print_cpu_debug_log(&cpu, clock);
     clock++;
   }
 
