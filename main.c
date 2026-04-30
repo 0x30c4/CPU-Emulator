@@ -2,14 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <fcntl.h>
+#include <unistd.h>
 
-#include "cpu_utils.c"
+#include "utils.c"
 
 #define true  1
 #define false 0
-
-
-const uint32_t MEMORY_SIZE = 0x10000;
 
 void print_cpu_debug_log(CPU *cpu, unsigned long long int clock) {
   printf("Clock: %llu\t", clock);
@@ -21,22 +20,23 @@ void print_cpu_debug_log(CPU *cpu, unsigned long long int clock) {
   printf("SP: 0x%x\t", cpu->SP);
   printf("\n");
 }
-
-void setup_memeory(uint8_t *memory) {
-
-  // Reset vector
-  write_mem(0xFFFC, 0x00, memory);
-  write_mem(0xFFFD, 0x80, memory);
-
-  // our program
-  write_mem(0x8000, LDA, memory);
-  write_mem(0x8001, 0x42, memory);
-  write_mem(0x8002, JMP, memory);
-  write_mem(0x8003, 0x00, memory);
-  write_mem(0x8004, 0x80, memory);
+//
+// memory_size is the size of the full memory
+// the block size is the size of each memory block
+// and for this case its 8 bit block size
+void setup_memeory(uint32_t memory_size, const char *filename, uint8_t *memory) {
+  load_memory(filename, memory, memory_size);
 }
 
 int main(int argc, char *argv[]) {
+
+  if (argc < 2) {
+    printf("usage: %s memory.bin\n", argv[0]);
+    printf("need a memory dump file\n");
+    return 1;
+  }
+
+  const char *memory_dump_file = argv[1];
 
   // TODO: fix the clock counter logic
   // at the start 7 empty cycle reset sequence
@@ -49,7 +49,9 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-  setup_memeory(memory);
+
+  setup_memeory(MEMORY_SIZE, memory_dump_file, memory);
+
   reset_cpu(&cpu, memory);
 
   while (true) {

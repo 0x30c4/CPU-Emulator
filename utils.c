@@ -1,5 +1,9 @@
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdint.h>
-#include "memory_utils.c"
+#include <stdint.h>
+
+const uint32_t MEMORY_SIZE = 0x10000;
 
 const uint8_t NOP = 0xEA;
 const uint8_t LDA = 0xA9;
@@ -13,6 +17,44 @@ typedef struct CPU6502 {
   uint8_t  SR;                  // Status Register
   uint8_t  SP;                  // Stack Pointer
 } CPU;
+
+uint8_t read_mem(uint16_t addr, uint8_t *memory) {
+  return *(memory + addr);
+}
+
+uint8_t write_mem(uint16_t addr, uint8_t data, uint8_t *memory) {
+  // TODO: return some kind of status
+  *(memory + addr) = data;
+  return *(memory + addr);
+}
+
+
+int dump_memory(char *filename, uint8_t *memory, uint32_t memory_size) {
+  // TODO: handle errors
+  int fd = open(filename, O_RDWR | O_CREAT | O_TRUNC, 0644);
+
+  int i = 0;
+  while (i <= memory_size) {
+    write(fd, memory + i, 1);
+    i++;
+  }
+  close(fd);
+  return 0;
+}
+
+
+int load_memory(const char *filename, uint8_t *memory, uint32_t memory_size) {
+  // TODO: handle errors
+  int fd = open(filename, O_RDWR, 0644);
+
+  int i = 0;
+  while (i <= memory_size) {
+    read(fd, memory + i, 1);
+    i++;
+  }
+  close(fd);
+  return 0;
+}
 
 // fetch one byte
 // current PC address value

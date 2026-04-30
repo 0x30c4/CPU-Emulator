@@ -1,2 +1,26 @@
 
 ##
+
+## Memory Layout
+
+ADDRESS | DATA
+-----------------
+0x0000  | 0x00    <- Start of memory
+0x0001  | 0x00
+.....
+.....
+.....
+0xFFFC  | 0x01
+0xFFFD  | 0x00
+0xFFFE  | 0x00
+0xFFFF  | 0x00    <- End of memory
+
+
+lo   hi
+0x01 0x00
+0x33 0x44
+
+(hi << 8) | lo
+
+00000000 00000000
+00000000 00000001
