@@ -2,7 +2,7 @@
 ##
 
 ## Memory Layout
-
+```
 ADDRESS | DATA
 -----------------
 0x0000  | 0x00    <- Start of memory
@@ -14,8 +14,9 @@ ADDRESS | DATA
 0xFFFD  | 0x00
 0xFFFE  | 0x00
 0xFFFF  | 0x00    <- End of memory
+```
 
-
+```
 lo   hi
 0x01 0x00
 0x33 0x44
@@ -24,3 +25,4 @@ lo   hi
 
 00000000 00000000
 00000000 00000001
+```
