@@ -3,3 +3,4 @@ make_mem
 main
 *.bin
 *.o
+.DS_Store

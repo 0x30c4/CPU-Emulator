@@ -7,9 +7,6 @@
 
 #include "utils.c"
 
-#define true  1
-#define false 0
-
 void print_cpu_debug_log(CPU *cpu, unsigned long long int clock) {
   printf("Clock: %llu\t", clock);
   printf("PC: 0x%x\t", cpu->PC);
@@ -19,13 +16,6 @@ void print_cpu_debug_log(CPU *cpu, unsigned long long int clock) {
   printf("SR: 0x%x\t", cpu->SR);
   printf("SP: 0x%x\t", cpu->SP);
   printf("\n");
-}
-//
-// memory_size is the size of the full memory
-// the block size is the size of each memory block
-// and for this case its 8 bit block size
-void setup_memeory(uint32_t memory_size, const char *filename, uint8_t *memory) {
-  load_memory(filename, memory, memory_size);
 }
 
 int main(int argc, char *argv[]) {
@@ -49,8 +39,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
-
-  setup_memeory(MEMORY_SIZE, memory_dump_file, memory);
+  load_memory(memory_dump_file, memory, MEMORY_SIZE);
 
   reset_cpu(&cpu, memory);
 
@@ -59,6 +48,7 @@ int main(int argc, char *argv[]) {
       break;
     }
 
+    sleep(1);
     cpu_step(&cpu, memory);
 
     print_cpu_debug_log(&cpu, clock);

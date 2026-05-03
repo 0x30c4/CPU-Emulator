@@ -3,6 +3,9 @@
 #include <stdint.h>
 #include <stdint.h>
 
+#define true  1
+#define false 0
+
 const uint32_t MEMORY_SIZE = 0x10000;
 
 const uint8_t NOP = 0xEA;
